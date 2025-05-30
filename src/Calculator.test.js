@@ -42,5 +42,13 @@ describe('Calculator Component', () => {
         fireEvent.click(getByText('Add'));
         expect(getByText('Result: 6')).toBeInTheDocument();
     });
+    it('Should handle custom delimiters', () => {
+        const { getByText, getByPlaceholderText } = render(<Calculator />);
+        const input = getByPlaceholderText('Enter numbers separated by commas');
+        
+        fireEvent.change(input, { target: { value: '//;\n1;2' } });
+        fireEvent.click(getByText('Add'));
+        expect(getByText('Result: 3')).toBeInTheDocument();
+    });
  
 });

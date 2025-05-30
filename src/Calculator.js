@@ -61,11 +61,12 @@ const Calculator = () => {
         <div className='calc-container'>
             <h3>Calculator using TDD</h3>
             <textarea
+                value={input}
                 placeholder="Enter numbers separated by commas"
                 onChange={(e) => setInput(e.target.value)}
             />
             <button onClick={handleCalculate}>Add</button>
-
+            <button onClick={() => setInput('')}>Clear</button>
             <p className="result-text">Result: {result}</p>
             <p className="error-message">
                 {result < 0 ? `Negatives not allowed: ${result}` : ''}

@@ -30,8 +30,14 @@ const Calculator = () => {
             if (isNaN(parsed)) throw new Error('Invalid number');
             return parsed;
         });
-
-        return numbers.reduce((acc, curr) => acc + curr, 0);
+        const negatives = numbers.filter(n => n < 0);
+        if (negatives.length > 0) {
+            console.log(`negatives: ${negatives.join(', ')}`)
+            throw new Error(`Negatives not allowed: ${negatives.join(', ')}`);
+        }
+         // Ignore numbers > 1000
+        const filteredNumbers = numbers.filter(n => n <= 1000);
+        return filteredNumbers.reduce((acc, curr) => acc + curr, 0);
     };
 
 

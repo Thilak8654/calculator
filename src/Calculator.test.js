@@ -50,5 +50,21 @@ describe('Calculator Component', () => {
         fireEvent.click(getByText('Add'));
         expect(getByText('Result: 3')).toBeInTheDocument();
     });
+    it('Should throw error for single negative number', () => {
+        const { getByText, getByPlaceholderText } = render(<Calculator />);
+        const input = getByPlaceholderText('Enter numbers separated by commas');
+        
+        fireEvent.change(input, { target: { value: '1,-2,3' } });
+        fireEvent.click(getByText('Add'));
+        expect(getByText('Negatives not allowed: -2')).toBeInTheDocument();
+    });
+    it('Should ignore numbers greater than 1000', () => {
+        const { getByText, getByPlaceholderText } = render(<Calculator />);
+        const input = getByPlaceholderText('Enter numbers separated by commas');
+        
+        fireEvent.change(input, { target: { value: '2,1002' } });
+        fireEvent.click(getByText('Add'));
+        expect(getByText('Result: 2')).toBeInTheDocument();
+    });
  
 });

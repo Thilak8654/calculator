@@ -1,41 +1,52 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 const Calculator = () => {
     const [input, setInput] = useState('');
     const [result, setResult] = useState(0);
+
     const add = (input) => {
         if (input.trim() === '') return 0;
-
-        // Normalize literal \n to actual newlines
-        const normalized = input.replace(/\\n/g, '\n');
-        let numbersString = normalized;
+        const normalizedString = input.replace(/\\n/g, '\n');
+        let numbersString = normalizedString;
         let delimiters = /[\n\r,]+/;
 
-        // Handle custom delimiter format
-        if (normalized.startsWith('//')) {
-            const delimiterEndIndex = normalized.indexOf('\n');
+        if (normalizedString.startsWith('//')) {
+            const delimiterEndIndex = normalizedString.indexOf('\n');
             if (delimiterEndIndex === -1) throw new Error('Invalid delimiter format');
 
-            // Extract delimiter and escape regex characters
-            const customDelimiter = normalized
-                .slice(2, delimiterEndIndex)
-                .replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const customDelimiter = normalizedString.slice(2, delimiterEndIndex);
+            const delimiterPatterns = [];
 
-            delimiters = new RegExp(`[${customDelimiter}\\n\\r]+`); // Include newlines as fallback
-            numbersString = normalized.slice(delimiterEndIndex + 1);
+            const regex = /\[([^\]]+)\]/g;
+            let match;
+            while ((match = regex.exec(customDelimiter)) !== null) {
+                delimiterPatterns.push(match[1].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+            }
+
+            if (delimiterPatterns.length === 0) {
+                delimiterPatterns.push(customDelimiter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+            }
+
+            delimiters = new RegExp(`(?:${delimiterPatterns.join('|')}|[\n\r])+`);
+            numbersString = normalizedString.slice(delimiterEndIndex + 1);
         }
 
-        const numbers = numbersString.split(delimiters).map(num => {
-            const parsed = parseInt(num.trim(), 10);
-            if (isNaN(parsed)) throw new Error('Invalid number');
-            return parsed;
-        });
+        const numbers = numbersString
+            .split(delimiters)
+            .map(num => num.trim())
+            .filter(num => num.length > 0) // to remove empty strings
+            .map(num => {
+                const parsedNumber = parseInt(num, 10);
+                if (isNaN(parsedNumber)) throw new Error('Invalid number');
+                return parsedNumber;
+            });
+
         const negatives = numbers.filter(n => n < 0);
         if (negatives.length > 0) {
-            console.log(`negatives: ${negatives.join(', ')}`)
-            throw new Error(`Negatives not allowed: ${negatives.join(', ')}`);
+            return negatives.join(', ');
         }
-         // Ignore numbers > 1000
+
+        // Ignore numbers > 1000
         const filteredNumbers = numbers.filter(n => n <= 1000);
         return filteredNumbers.reduce((acc, curr) => acc + curr, 0);
     };
@@ -47,7 +58,7 @@ const Calculator = () => {
     }
 
     return (
-        <div>
+        <div className='calc-container'>
             <h3>Calculator using TDD</h3>
             <textarea
                 placeholder="Enter numbers separated by commas"
@@ -55,7 +66,13 @@ const Calculator = () => {
             />
             <button onClick={handleCalculate}>Add</button>
 
-            <p>Result: {result}</p>
+            <p className="result-text">Result: {result}</p>
+            <p className="error-message">
+                {result < 0 ? `Negatives not allowed: ${result}` : ''}
+            </p>
+            <p className="error-message">
+                {result > 1000 ? 'Numbers greater than 1000 are ignored' : ''}
+            </p>
         </div>
     )
 }
